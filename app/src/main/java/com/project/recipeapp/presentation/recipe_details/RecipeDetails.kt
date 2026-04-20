@@ -27,7 +27,6 @@ import com.project.recipeapp.R
 import com.project.recipeapp.domain.Ingredient
 import com.project.recipeapp.domain.Instruction
 import com.project.recipeapp.domain.RecipeDetails
-import com.project.recipeapp.presentation.UiState
 import com.project.recipeapp.presentation.asString
 import com.project.recipeapp.presentation.recipe_details.components.MessageAlertDialog
 import com.project.recipeapp.presentation.recipe_details.components.RecipeDetailsView
@@ -61,21 +60,22 @@ fun RecipeDetailsScreen(
 
             TopBar(
                 onBackClick = { onAction(RecipeDetailsAction.OnBackPress) },
-                successfullyLoaded = state.uiState == UiState.SUCCESS,
+                successfullyLoaded = !state.isLoadingInitial && state.errorMessage == null,
                 recipeName = state.recipe.name
             )
 
-            when(state.uiState){
-                UiState.LOADING -> ProgressView()
-                UiState.ERROR -> ErrorView(
-                    errorMessage = state.errorMessage?.asString() ?: "",
-                    onRetry = { onAction(RecipeDetailsAction.OnRetryLoading) }
+            when{
+                state.isLoadingInitial -> ProgressView()
+                state.errorMessage != null -> ErrorView(
+                    errorMessage = state.errorMessage.asString(),
+                    onRetry = { onAction(RecipeDetailsAction.OnRetryLoading) },
+                    modifier = Modifier.fillMaxSize().padding(10.dp)
                 )
-                UiState.SUCCESS -> RecipeDetailsView(recipe = state.recipe)
+                else -> RecipeDetailsView(recipe = state.recipe)
             }
         }
 
-        if(state.uiState == UiState.SUCCESS){
+        if(!state.isLoadingInitial && state.errorMessage == null){
             FloatingActionButton(
                 onClick = { onAction(RecipeDetailsAction.OnLikeToggle) },
                 modifier = Modifier

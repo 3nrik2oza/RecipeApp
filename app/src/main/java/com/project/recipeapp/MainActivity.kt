@@ -6,18 +6,20 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
+import com.project.recipeapp.presentation.UiEvent
+import com.project.recipeapp.presentation.asString
 import com.project.recipeapp.presentation.recipe_details.RecipeDetailsAction
 import com.project.recipeapp.presentation.recipe_details.RecipeDetailsScreen
 import com.project.recipeapp.presentation.recipe_details.RecipeDetailsViewModel
@@ -34,12 +36,13 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
 
-
             val navController = rememberNavController()
+            val snackbarHostState = remember { SnackbarHostState() }
 
             RecipeAppTheme {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
+                    snackbarHost = { SnackbarHost(snackbarHostState) }
                 ) { innerPadding ->
                     NavHost(
                         navController = navController,
@@ -50,6 +53,19 @@ class MainActivity : ComponentActivity() {
                         composable<Route.ListScreen>{
                             val viewModel = koinViewModel<RecipeListScreenViewModel>()
                             val state by viewModel.state.collectAsStateWithLifecycle()
+
+
+
+                            val context = LocalContext.current
+                            LaunchedEffect(viewModel.eventFlow) {
+                                viewModel.eventFlow.collect { event ->
+                                    when(event){
+                                        is UiEvent.ShowSnackbar -> {
+                                            snackbarHostState.showSnackbar(event.message.asString(context))
+                                        }
+                                    }
+                                }
+                            }
 
                             RecipeListScreen(
                                 state = state,
@@ -69,11 +85,6 @@ class MainActivity : ComponentActivity() {
                         composable<Route.DetailScreen> {
                             val viewModel = koinViewModel<RecipeDetailsViewModel>()
                             val state by viewModel.state.collectAsStateWithLifecycle()
-
-                            LaunchedEffect(Unit) {
-                                val route = it.toRoute<Route.DetailScreen>()
-                                viewModel.onAction(RecipeDetailsAction.OnIdSelected(route.recipeId))
-                            }
 
                             RecipeDetailsScreen(
                                 state = state,

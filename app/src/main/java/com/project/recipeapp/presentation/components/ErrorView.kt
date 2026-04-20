@@ -3,9 +3,7 @@ package com.project.recipeapp.presentation.components
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -18,10 +16,11 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun ErrorView(
     errorMessage: String,
-    onRetry: () -> Unit
+    onRetry: () -> Unit,
+    modifier: Modifier
 ){
     Box(
-        Modifier.fillMaxSize().padding(10.dp),
+        modifier,
         contentAlignment = Alignment.Center
     ){
         Column(

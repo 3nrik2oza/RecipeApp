@@ -1,15 +1,17 @@
 package com.project.recipeapp.presentation.recipe_list.components
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -27,7 +29,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.project.recipeapp.R
 import com.project.recipeapp.domain.Recipe
-import com.project.recipeapp.presentation.components.ProgressView
+import com.project.recipeapp.presentation.UiText
+import com.project.recipeapp.presentation.asString
+import com.project.recipeapp.presentation.components.ErrorView
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 
@@ -35,6 +39,7 @@ import kotlinx.coroutines.flow.filter
 fun RecipeList(
     recipes: List<Recipe>,
     isLoadingMore: Boolean,
+    paginationErrorMessage: UiText?,
     onLoadMore: () -> Unit,
     onOpenRecipe: (String) -> Unit
 ){
@@ -51,7 +56,7 @@ fun RecipeList(
     LaunchedEffect(listState, isLoadingMore) {
         snapshotFlow { shouldLoadMore }
             .distinctUntilChanged()
-            .filter { it }
+            .filter { it && !isLoadingMore && paginationErrorMessage == null}
             .collect { onLoadMore() }
     }
 
@@ -59,13 +64,33 @@ fun RecipeList(
         state = listState,
         modifier = Modifier.fillMaxSize().padding(10.dp)
     ) {
-        itemsIndexed(recipes){ _, recipe ->
+        items(
+            items = recipes,
+            //key = {recipe -> recipe.id} // Trenutno API vedno vrne istih 10 elementov, med testiranjem pa mi aplikacija crasha
+        ){ recipe ->
             RecipeCard(recipe, onOpenRecipe)
         }
 
         if(isLoadingMore){
             item{
-                ProgressView()
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(32.dp),
+                    contentAlignment = Alignment.Center
+                ){
+                    CircularProgressIndicator()
+                }
+            }
+        }
+
+        if(paginationErrorMessage != null && !isLoadingMore){
+            item {
+                ErrorView(
+                    errorMessage = paginationErrorMessage.asString(),
+                    onRetry = { onLoadMore() },
+                    modifier = Modifier.fillMaxWidth().padding(20.dp)
+                )
             }
         }
     }
@@ -74,12 +99,15 @@ fun RecipeList(
 @Composable
 private fun RecipeCard(recipe: Recipe, onOpenRecipe: (String) -> Unit){
     ElevatedCard(
-        modifier = Modifier.fillMaxWidth()
+        onClick = { onOpenRecipe(recipe.id) },
+        modifier = Modifier
+            .fillMaxWidth()
             .padding(10.dp)
-            .clickable(onClick = { onOpenRecipe(recipe.id) })
     ) {
         Row(
-            Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp),
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp, vertical = 5.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {

@@ -1,7 +1,6 @@
-package com.project.recipeapp.data
+package com.project.recipeapp.data.network
 
-import com.project.recipeapp.domain.RecipeDetails
-import okhttp3.ResponseBody
+import com.project.recipeapp.data.dto.RecipeDetailsDto
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -18,8 +17,8 @@ interface RecipeApi {
     ): Response<RecipesResponse>
 
     @GET("/recipes/{id}")
-    suspend fun getRecipe(@Path("id") id: String): Response<RecipeDetails>
+    suspend fun getRecipe(@Path("id") id: String): Response<RecipeDetailsDto>
 
     @POST("/recipes/{id}/like")
-    suspend fun postRecipeLike(@Path("id") id: String): Response<RecipeDetails>
+    suspend fun postRecipeLike(@Path("id") id: String): Response<RecipeDetailsDto>
 }

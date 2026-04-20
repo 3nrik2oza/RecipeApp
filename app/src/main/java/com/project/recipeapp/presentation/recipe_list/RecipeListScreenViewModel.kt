@@ -5,13 +5,13 @@ import androidx.lifecycle.viewModelScope
 import com.project.recipeapp.data.RecipeRepository
 import com.project.recipeapp.domain.onError
 import com.project.recipeapp.domain.onSuccess
-import com.project.recipeapp.presentation.UiState
+import com.project.recipeapp.presentation.UiEvent
 import com.project.recipeapp.presentation.recipe_list.components.TabState
 import com.project.recipeapp.presentation.toErrorMessage
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -19,22 +19,17 @@ class RecipeListScreenViewModel(
     private val recipeRepository: RecipeRepository
 ) : ViewModel() {
 
-    private var hasLoadedInitialData = false
+    private val _eventFlow = Channel<UiEvent>()
+    val eventFlow = _eventFlow.receiveAsFlow()
 
     private val _state = MutableStateFlow(RecipeListScreenState())
-    val state = _state
-        .onStart {
-            if (!hasLoadedInitialData) {
-                loadPage(1, false)
-                hasLoadedInitialData = true
-            }
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000L),
-            initialValue = RecipeListScreenState()
-        )
+    val state = _state.asStateFlow()
 
+
+
+    init{
+        loadPage(1, false)
+    }
 
     fun onAction(action: RecipeListScreenAction) {
         when (action) {
@@ -43,19 +38,19 @@ class RecipeListScreenViewModel(
                     return
                 }
 
-                _state.update { it.copy(selectedTab = action.tabSelected, currentPage = 1, uiState = UiState.LOADING) }
+                _state.update { it.copy(selectedTab = action.tabSelected, currentPage = 1, isLoadingInitial = true) }
                 loadPage(1, action.tabSelected == TabState.LIKED)
             }
             is RecipeListScreenAction.OnLoadNextPage -> {
                 val current = _state.value
-                if(!current.isLoadingMore && current.uiState == UiState.SUCCESS){
+                if(!current.isLoadingMore){
                     loadPage(current.currentPage + 1, current.selectedTab == TabState.LIKED)
                 }
             }
             is RecipeListScreenAction.OnRetryLoading -> {
                 _state.update { it.copy(
-                    uiState = UiState.LOADING,
-                    errorMessage = null
+                    errorMessage = null,
+                    isLoadingInitial = true
                 ) }
                 loadPage(1, _state.value.selectedTab == TabState.LIKED)
             }
@@ -65,20 +60,28 @@ class RecipeListScreenViewModel(
 
     private fun loadPage(page: Int, likedOnly: Boolean){
         viewModelScope.launch {
-            _state.update { it.copy(isLoadingMore = true) }
+            _state.update { it.copy(isLoadingMore = true, paginationErrorMessage = null) }
 
             recipeRepository.getRecipes(page, likedOnly).onError { error ->
-                _state.update {
-                    it.copy(
-                        uiState = UiState.ERROR,
-                        isLoadingMore = false,
-                        errorMessage = error.toErrorMessage())
+                if(page == 1){
+                    _state.update {
+                        it.copy(
+                            isLoadingInitial = false,
+                            isLoadingMore = false,
+                            errorMessage = error.toErrorMessage()
+                        )
+                    }
+                }else{
+                    _state.update { it.copy(
+                        isLoadingMore = false, paginationErrorMessage = error.toErrorMessage(),
+                    ) }
+                    _eventFlow.send(UiEvent.ShowSnackbar(error.toErrorMessage()))
                 }
 
             }.onSuccess { recipes ->
                 _state.update {
                     it.copy(
-                        uiState = UiState.SUCCESS,
+                        isLoadingInitial = false,
                         recipeList = if (page== 1) recipes else it.recipeList + recipes,
                         currentPage = page,
                         isLoadingMore = false,

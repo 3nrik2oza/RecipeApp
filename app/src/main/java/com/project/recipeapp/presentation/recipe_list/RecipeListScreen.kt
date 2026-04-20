@@ -3,19 +3,19 @@ package com.project.recipeapp.presentation.recipe_list
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.project.recipeapp.domain.Recipe
-import com.project.recipeapp.presentation.UiState
 import com.project.recipeapp.presentation.asString
 import com.project.recipeapp.presentation.components.ErrorView
 import com.project.recipeapp.presentation.components.ProgressView
 import com.project.recipeapp.presentation.recipe_list.components.RecipeList
 import com.project.recipeapp.presentation.recipe_list.components.TabView
 import com.project.recipeapp.ui.theme.RecipeAppTheme
-
 
 @Composable
 fun RecipeListScreen(
@@ -32,19 +32,22 @@ fun RecipeListScreen(
             onTabSelected = {index -> onAction(RecipeListScreenAction.OnTabSelected(index))}
         )
 
-        when(state.uiState){
-            UiState.LOADING -> ProgressView()
-            UiState.ERROR -> ErrorView(
-                errorMessage = state.errorMessage?.asString() ?: "",
-                onRetry = { onAction(RecipeListScreenAction.OnRetryLoading) }
+        when{
+            state.isLoadingInitial && state.recipeList.isEmpty() -> ProgressView()
+            state.errorMessage != null && state.recipeList.isEmpty() -> ErrorView(
+                errorMessage = state.errorMessage.asString(),
+                onRetry = { onAction(RecipeListScreenAction.OnRetryLoading) },
+                modifier = Modifier.fillMaxSize().padding(10.dp)
             )
-            UiState.SUCCESS -> RecipeList(
+            else -> RecipeList(
                 recipes = state.recipeList,
                 isLoadingMore = state.isLoadingMore,
+                paginationErrorMessage = state.paginationErrorMessage,
                 onLoadMore = { onAction(RecipeListScreenAction.OnLoadNextPage) },
                 onOpenRecipe = { id -> onAction(RecipeListScreenAction.OnOpenRecipe(id))}
             )
         }
+
     }
 }
 
@@ -56,8 +59,7 @@ private fun Preview() {
     RecipeAppTheme {
         RecipeListScreen(
             state = RecipeListScreenState(
-                uiState = UiState.SUCCESS,
-                recipeList = listOf(Recipe("", "Recipe1", "", "", false))
+                recipeList = listOf(Recipe("", "Recipe1", "", java.time.Instant.now(), false))
             ),
             onAction = {}
         )

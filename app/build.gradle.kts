@@ -59,8 +59,8 @@ dependencies {
 
     // retrofit
     implementation(libs.retrofit)
-    implementation(libs.converter.gson)
     implementation(libs.okhttp)
+    implementation(libs.retrofit2.kotlinx.serialization.converter)
 
     // Koin for Android
     implementation(libs.koin.android)
