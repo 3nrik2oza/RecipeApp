@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     id("org.jetbrains.kotlin.plugin.serialization") version "2.0.21"
+    id("kotlin-parcelize")
 }
 
 android {
@@ -61,6 +62,9 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.okhttp)
     implementation(libs.retrofit2.kotlinx.serialization.converter)
+    implementation(libs.moshi)
+    implementation ("com.squareup.retrofit2:converter-moshi:2.9.0")
+    implementation ("com.squareup.moshi:moshi-kotlin:1.15.0")
 
     // Koin for Android
     implementation(libs.koin.android)
@@ -68,9 +72,14 @@ dependencies {
     implementation(libs.koin.androidx.compose)
 
     // Navigation
-    implementation(libs.navigation.compose)
-    implementation ("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
+    //implementation(libs.navigation.compose)
+    //implementation ("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
+
+    // Core Appyx
+    implementation(libs.core)
 
     // Icons
     implementation (libs.androidx.material.icons.extended)
+
+    implementation(libs.material)
 }

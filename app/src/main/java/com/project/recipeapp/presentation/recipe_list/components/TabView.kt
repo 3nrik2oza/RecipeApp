@@ -3,6 +3,7 @@ package com.project.recipeapp.presentation.recipe_list.components
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
@@ -10,7 +11,6 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.project.recipeapp.R
@@ -39,7 +39,7 @@ fun TabView(
                 onTabSelected(TabState.HOME)
             },
             modifier = Modifier,
-            unselectedContentColor = Color.Black.copy(alpha = 0.5f)
+            unselectedContentColor = MaterialTheme.colorScheme.onSurface
         ){
             Text(
                 text = stringResource(R.string.home),
@@ -53,7 +53,7 @@ fun TabView(
                 onTabSelected(TabState.LIKED)
             },
             modifier = Modifier,
-            unselectedContentColor = Color.Black.copy(alpha = 0.5f)
+            unselectedContentColor = MaterialTheme.colorScheme.onSurface
         ){
             Text(
                 text = stringResource(R.string.favorites),

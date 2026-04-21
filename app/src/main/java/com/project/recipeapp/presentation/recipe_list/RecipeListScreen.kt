@@ -9,7 +9,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.project.recipeapp.domain.Recipe
 import com.project.recipeapp.presentation.asString
 import com.project.recipeapp.presentation.components.ErrorView
 import com.project.recipeapp.presentation.components.ProgressView
@@ -58,9 +57,7 @@ fun RecipeListScreen(
 private fun Preview() {
     RecipeAppTheme {
         RecipeListScreen(
-            state = RecipeListScreenState(
-                recipeList = listOf(Recipe("", "Recipe1", "", java.time.Instant.now(), false))
-            ),
+            state = RecipeListScreenState(),
             onAction = {}
         )
     }

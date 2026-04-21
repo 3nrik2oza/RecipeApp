@@ -80,7 +80,8 @@ fun RecipeDetailsScreen(
                 onClick = { onAction(RecipeDetailsAction.OnLikeToggle) },
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(bottom = 24.dp)
+                    .padding(bottom = 24.dp),
+                containerColor = MaterialTheme.colorScheme.secondary
             ) {
                 Icon(
                     painter = if(state.recipe.liked) painterResource(R.drawable.ic_heart)

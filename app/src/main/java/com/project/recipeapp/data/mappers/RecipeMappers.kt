@@ -1,15 +1,15 @@
 package com.project.recipeapp.data.mappers
 
-import com.project.recipeapp.data.dto.RecipeDto
-import com.project.recipeapp.domain.Recipe
-import java.time.Instant
 
-fun RecipeDto.toRecipe() : Recipe{
+import com.project.recipeapp.data.models.RecipeListItem
+import com.project.recipeapp.domain.Recipe
+
+fun RecipeListItem.toRecipe() : Recipe{
     return Recipe(
         id = id,
         name = name,
         shortDescription = shortDescription,
-        publishedAt = Instant.parse(publishedAt),
+        publishedAt = publishedAt,
         liked = liked
     )
 }

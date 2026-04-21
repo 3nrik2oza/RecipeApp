@@ -1,10 +1,7 @@
 package com.project.recipeapp.presentation.recipe_details
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
-import com.project.recipeapp.Route
 import com.project.recipeapp.data.RecipeRepository
 import com.project.recipeapp.domain.onError
 import com.project.recipeapp.domain.onSuccess
@@ -16,7 +13,7 @@ import kotlinx.coroutines.launch
 
 class RecipeDetailsViewModel(
     private val repository: RecipeRepository,
-    savedStateHandle: SavedStateHandle
+    private val recipeId: String
 ) : ViewModel() {
 
 
@@ -24,8 +21,6 @@ class RecipeDetailsViewModel(
     val state = _state.asStateFlow()
 
     init {
-        val route = savedStateHandle.toRoute<Route.DetailScreen>()
-        val recipeId = route.recipeId
 
         _state.update { it.copy(recipeId = recipeId) }
         loadRecipeDetails(recipeId)
